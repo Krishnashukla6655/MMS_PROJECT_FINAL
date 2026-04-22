@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accounts Center — MMS Industries</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    /* Accounts Center Layout */
+    .ac-container {
+      max-width: 1100px;
+      margin: 3rem auto;
+      display: flex;
+      gap: 2rem;
+      padding: 0 1rem;
+      min-height: 70vh;
+    }
+
+    /* Sidebar */
+    .ac-sidebar {
+      flex: 0 0 280px;
+      background: rgba(15, 17, 21, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 1.5rem 1rem;
+      align-self: flex-start;
+      position: sticky;
+      top: 100px;
+    }
+    .ac-sidebar-header {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ac-nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .ac-nav-item {
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.3rem;
+      border-radius: 8px;
+      color: var(--muted);
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      transition: all 0.2s ease;
+    }
+    .ac-nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+    .ac-nav-item.active {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* Main Content Area */
+    .ac-main {
+      flex: 1;
+    }
+    .ac-tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .ac-tab-content.active {
+      display: block;
+    }
+    .ac-header {
+      margin-bottom: 2rem;
+    }
+    .ac-header h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .ac-header p {
+      color: var(--muted2);
+      font-size: 0.95rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    /* Cards & Lists */
+    .ac-card {
+      background: rgba(15, 17, 21, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .ac-card-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ac-list-item {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+    .ac-list-item:last-child {
+      border-bottom: none;
+    }
+    .ac-list-item:hover {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .item-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .item-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .item-text h4 {
+      margin: 0 0 0.2rem 0;
+      font-size: 1rem;
+    }
+    .item-text p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted2);
+    }
+    .chevron {
+      color: var(--muted2);
+      font-size: 1.2rem;
+    }
+
+    /* Forms inside cards */
+    .ac-form-group {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    .ac-form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .ac-form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .ac-form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* Toggles */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--border);
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary);
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    @media (max-width: 768px) {
+      .ac-container {
+        flex-direction: column;
+      }
+      .ac-sidebar {
+        flex: auto;
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/index.html" class="nav-brand">⚙️ MMS<span>Industries</span></a>
+  <div class="nav-links">
+    <a href="/index.html">Products</a>
+    <a href="/orders.html" id="nav-orders" style="display:none">My Orders</a>
+    <a href="/profile.html" class="active" id="nav-profile" style="display:none">My Profile</a>
+    <a href="/admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    <a href="/portal.html" id="nav-login">Login</a>
+    <a href="#" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+    <span id="nav-user" style="color:var(--muted2);font-size:.85rem;display:none"></span>
+  </div>
+</nav>
+
+<div class="ac-container">
+  
+  <!-- Sidebar -->
+  <aside class="ac-sidebar scroll-reveal">
+    <div class="ac-sidebar-header">
+      <span style="background:var(--primary); padding:4px; border-radius:6px; color:#fff;">⚙️</span>
+      Accounts Center
+    </div>
+    <ul class="ac-nav">
+      <li class="ac-nav-item active" data-target="tab-personal">
+        <span class="icon">👤</span> Personal details
+      </li>
+      <li class="ac-nav-item" data-target="tab-security">
+        <span class="icon">🛡️</span> Password and security
+      </li>
+      <li class="ac-nav-item" data-target="tab-connections">
+        <span class="icon">🔗</span> Connected experiences
+      </li>
+      <li class="ac-nav-item" data-target="tab-permissions">
+        <span class="icon">📑</span> Info & permissions
+      </li>
+      <li class="ac-nav-item" data-target="tab-payments">
+        <span class="icon">💳</span> MMS Pay
+      </li>
+      <li class="ac-nav-item" data-target="tab-subscriptions">
+        <span class="icon">🔄</span> Subscriptions
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ac-main scroll-reveal">
+    
+    <!-- 1. PERSONAL DETAILS (Functional) -->
+    <div class="ac-tab-content active" id="tab-personal">
+      <div class="ac-header">
+        <h2>Profiles and personal details</h2>
+        <p>Review the profiles and personal details that you've added to this Accounts Center. You can update your core identity here.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-card-header">Identity</div>
+        <form id="personalForm">
+          <div class="ac-list-item" style="display:block">
+             <div class="ac-form-group">
+               <label>Full Name</label>
+               <input type="text" id="name" required />
+             </div>
+             <div class="ac-form-group">
+               <label>Email Address</label>
+               <input type="email" id="email" required />
+             </div>
+             <div class="ac-form-group">
+                <label style="color:var(--primary)">Current Password (Required to save)</label>
+                <input type="password" id="personalCurrentPwd" required placeholder="Enter password to verify identity" style="border-color: rgba(139,92,246,0.4);" />
+             </div>
+          </div>
+          <div class="ac-list-item" style="background: rgba(0,0,0,0.2)">
+            <button type="submit" class="btn btn-primary" id="savePersonalBtn">Save Details</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. PASSWORD & SECURITY (Functional + Mocks) -->
+    <div class="ac-tab-content" id="tab-security">
+      <div class="ac-header">
+        <h2>Password and security</h2>
+        <p>Manage your password, login alerts, and multi-factor authentication settings across MMS Industries.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-card-header">Change Password</div>
+        <form id="securityForm">
+          <div class="ac-list-item" style="display:block">
+             <div class="ac-form-group">
+               <label>New Password</label>
+               <input type="password" id="newPassword" required placeholder="Enter new password" />
+             </div>
+             <div class="ac-form-group">
+                <label style="color:var(--primary)">Current Password (Required)</label>
+                <input type="password" id="securityCurrentPwd" required placeholder="Enter current password" style="border-color: rgba(139,92,246,0.4);" />
+             </div>
+          </div>
+          <div class="ac-list-item" style="background: rgba(0,0,0,0.2)">
+            <button type="submit" class="btn btn-primary" id="saveSecurityBtn">Update Password</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="ac-card">
+        <div class="ac-card-header">Advanced Security</div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">📱</div>
+            <div class="item-text">
+              <h4>Two-Factor Authentication</h4>
+              <p>Add an extra layer of security using Google Authenticator.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">🚨</div>
+            <div class="item-text">
+              <h4>Login Alerts</h4>
+              <p>Get notified if someone logs into your account from a new device.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-card-header">Where you're logged in</div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">💻</div>
+            <div class="item-text">
+              <h4>MacBook Pro 16"</h4>
+              <p style="color: #10b981">Active now · Mumbai, India</p>
+            </div>
+          </div>
+        </div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">📱</div>
+            <div class="item-text">
+              <h4>iPhone 15 Pro Max</h4>
+              <p>Active 2 hours ago · Mumbai, India</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CONNECTED EXPERIENCES (Mock) -->
+    <div class="ac-tab-content" id="tab-connections">
+      <div class="ac-header">
+        <h2>Connected experiences</h2>
+        <p>Manage your linked external accounts for faster login and workflow integrations.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-card-header">Linked Accounts</div>
+        <div class="ac-list-item" style="cursor:pointer">
+          <div class="item-info">
+            <div class="item-avatar" style="background:#ea4335; color:#fff;">G</div>
+            <div class="item-text">
+              <h4>Google Workspace</h4>
+              <p>sanjay.mms@gmail.com · <span style="color:#10b981">Connected</span></p>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="ac-list-item" style="cursor:pointer">
+          <div class="item-info">
+            <div class="item-avatar" style="background:#25D366; color:#fff;">W</div>
+            <div class="item-text">
+              <h4>WhatsApp Business</h4>
+              <p>+91 98765 43210 · <span style="color:#10b981">Connected</span></p>
+            </div>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="ac-list-item" style="cursor:pointer; opacity: 0.6">
+          <div class="item-info">
+            <div class="item-avatar" style="background:#0077b5; color:#fff;">in</div>
+            <div class="item-text">
+              <h4>LinkedIn</h4>
+              <p>Not connected</p>
+            </div>
+          </div>
+          <span style="color:var(--primary); font-size:0.9rem; font-weight:600">Connect</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. INFO & PERMISSIONS (Mock) -->
+    <div class="ac-tab-content" id="tab-permissions">
+      <div class="ac-header">
+        <h2>Your information and permissions</h2>
+        <p>Control what data MMS Industries collects and how we communicate with you.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">📧</div>
+            <div class="item-text">
+              <h4>Marketing Emails</h4>
+              <p>Receive updates about new products and wholesale discounts.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar">💬</div>
+            <div class="item-text">
+              <h4>Order SMS Updates</h4>
+              <p>Get real-time tracking texts for bulk orders.</p>
+            </div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. MMS PAY (Mock) -->
+    <div class="ac-tab-content" id="tab-payments">
+      <div class="ac-header">
+        <h2>MMS Pay</h2>
+        <p>Manage your saved payment methods and billing addresses for seamless checkout.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-card-header">Payment Methods</div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar" style="background:#1e3a8a; font-size:0.8rem">VISA</div>
+            <div class="item-text">
+              <h4>HDFC Bank Credit Card</h4>
+              <p>Ends in 4455 · Expires 12/28</p>
+            </div>
+          </div>
+          <span style="color:#ef4444; font-size:0.85rem; cursor:pointer">Remove</span>
+        </div>
+        <div class="ac-list-item">
+          <div class="item-info">
+            <div class="item-avatar" style="background:#0f1115; font-size:0.8rem">UPI</div>
+            <div class="item-text">
+              <h4>Google Pay UPI</h4>
+              <p>user@okicici</p>
+            </div>
+          </div>
+          <span style="color:#ef4444; font-size:0.85rem; cursor:pointer">Remove</span>
+        </div>
+        <div class="ac-list-item" style="justify-content:center; cursor:pointer; color:var(--primary); font-weight:600">
+          + Add New Payment Method
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. SUBSCRIPTIONS (Mock) -->
+    <div class="ac-tab-content" id="tab-subscriptions">
+      <div class="ac-header">
+        <h2>Subscriptions</h2>
+        <p>Manage your recurring manufacturing material subscriptions.</p>
+      </div>
+      
+      <div class="ac-card">
+        <div class="ac-list-item" style="padding: 3rem 1.5rem; text-align:center; display:block">
+          <div style="font-size:3rem; margin-bottom:1rem">📦</div>
+          <h4>No Active Subscriptions</h4>
+          <p style="color:var(--muted2); margin-top:0.5rem">You currently have no recurring monthly orders.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/js/auth.js"></script>
+<script>
+  function init() {
+    updateNav();
+    const user = getUser();
+    if (!user) {
+      location.href = '/login.html';
+      return;
+    }
+    
+    // Show profile link since user is logged in
+    document.getElementById('nav-profile').style.display = 'inline';
+
+    // Populate actual details
+    document.getElementById('name').value = user.name || '';
+    document.getElementById('email').value = user.email || '';
+  }
+
+  // Handle Sidebar Tab Switching
+  const navItems = document.querySelectorAll('.ac-nav-item');
+  const tabContents = document.querySelectorAll('.ac-tab-content');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      // Remove active from all
+      navItems.forEach(n => n.classList.remove('active'));
+      tabContents.forEach(t => t.classList.remove('active'));
+      
+      // Add active to clicked
+      item.classList.add('active');
+      const targetId = item.getAttribute('data-target');
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+
+  // Handle Form Submissions via the single API endpoint
+  async function submitProfileUpdate(payload, btnElement, passwordFieldToClear) {
+    btnElement.disabled = true;
+    const originalText = btnElement.textContent;
+    btnElement.textContent = 'Saving...';
+
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.message);
+
+      // Update local storage with new token and user
+      if (data.token && data.user) {
+        localStorage.setItem('mms_token', data.token);
+        localStorage.setItem('mms_user', JSON.stringify(data.user));
+      }
+
+      showToast('Account updated successfully!', 'success');
+      
+      // Clear specific password fields so user has to re-enter next time
+      if(passwordFieldToClear) {
+        passwordFieldToClear.value = '';
+      }
+      
+      updateNav();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      btnElement.disabled = false;
+      btnElement.textContent = originalText;
+    }
+  }
+
+  // Personal Details Form
+  document.getElementById('personalForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const currentPassword = document.getElementById('personalCurrentPwd');
+    if (!currentPassword.value) {
+      showToast('Current password is required to verify identity', 'error');
+      return;
+    }
+    const payload = {
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      currentPassword: currentPassword.value
+    };
+    submitProfileUpdate(payload, document.getElementById('savePersonalBtn'), currentPassword);
+  });
+
+  // Security Form
+  document.getElementById('securityForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newPassword = document.getElementById('newPassword');
+    const currentPassword = document.getElementById('securityCurrentPwd');
+    if (!currentPassword.value) {
+      showToast('Current password is required', 'error');
+      return;
+    }
+    const payload = {
+      newPassword: newPassword.value,
+      currentPassword: currentPassword.value
+    };
+    submitProfileUpdate(payload, document.getElementById('saveSecurityBtn'), currentPassword);
+    newPassword.value = ''; // clear new pwd too
+  });
+
+  init();
+</script>
+<script src="/js/visual-engine.js"></script>
+<script src="/js/chatbot.js"></script>
+<script src="/js/user-notifications.js"></script>
+<script src="/js/voice-mode.js"></script>
+</body>
+</html>

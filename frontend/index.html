@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MMS — Manufacturing Product Catalog</title>
+  <meta name="description" content="Browse and order industrial manufacturing products in bulk."/>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/index.html" class="nav-brand">⚙️ MMS<span>Industries</span></a>
+  <div class="nav-links">
+    <a href="/index.html" class="active" id="nav-home">Products</a>
+    <a href="/orders.html" id="nav-orders" style="display:none">My Orders</a>
+    <a href="/profile.html" id="nav-profile" style="display:none">My Profile</a>
+    <a href="/admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    <a href="/portal.html" id="nav-login">Login</a>
+    <a href="/portal.html" id="nav-register">Register</a>
+    <a href="#" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+    <div id="userNotifBell" class="notif-item" onclick="toggleUserNotifPanel()" style="display:none;cursor:pointer;align-items:center;justify-content:center;gap:.5rem;background:rgba(139,92,246,.12);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(139,92,246,.4);border-radius:10px;padding:.4rem .8rem;font-size:.9rem;font-weight:700;color:#eaddff;-webkit-text-fill-color:initial;transition:all .3s;position:relative;text-align:center;overflow:hidden;box-shadow:inset 1px 0 0 rgba(255,255,255,0.1), 0 4px 15px rgba(0,0,0,0.2);margin-left:.5rem;">
+      <span style="z-index: 2; position: relative; -webkit-text-fill-color:#eaddff;">🔔 Alerts</span>
+      <span id="userNotifBadge" style="display:none;background:#ef4444;color:#fff;-webkit-text-fill-color:#fff;border-radius:99px;font-size:.7rem;font-weight:700;padding:.1rem .4rem;min-width:18px;text-align:center;z-index: 2;position: relative;">0</span>
+    </div>
+    <span id="nav-user" style="color:var(--muted2);font-size:.85rem;display:none;margin-left:.5rem;"></span>
+  </div>
+</nav>
+
+<section class="hero" style="background: linear-gradient(135deg, #1e3a8a, #7c3aed); padding: 5rem 2rem 6rem; text-align: center; color: white; border-bottom: 1px solid rgba(255,255,255,0.1);">
+  <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2;">Welcome to the<br/>MMS Web Portal</h1>
+  <p style="margin-bottom: 2.5rem; font-size: 1.1rem; opacity: 0.9;">Click the Button Below to Browse</p>
+  <div style="display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 4rem;">
+    <a href="#catalog" style="border: 1px solid rgba(255,255,255,0.8); padding: 0.7rem 2.5rem; border-radius: 30px; color: white; text-decoration: none; font-weight: 600; font-size: 1.05rem; transition: background 0.2s;">Browse Catalog</a>
+    <a href="#" onclick="openContactModal(event)" style="border: 1px solid rgba(255,255,255,0.8); padding: 0.7rem 2.5rem; border-radius: 30px; color: white; text-decoration: none; font-weight: 600; font-size: 1.05rem; transition: background 0.2s;">Contact US</a>
+  </div>
+  <!-- High Graphics Animation Core instead of System Details -->
+  <div class="hero-animation-container">
+    <div class="cyber-core">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="core-orb"></div>
+      <div class="core-particles"></div>
+      <div class="floating-hologram">
+        <div class="holo-line"></div>
+        <div class="holo-line"></div>
+        <div class="holo-line"></div>
+        <div class="holo-text">MMS-AI NEURAL ENGINE ONLINE</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .hero-animation-container {
+      position: relative;
+      height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 2rem auto 0;
+      perspective: 1000px;
+    }
+    
+    .cyber-core {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      transform-style: preserve-3d;
+      animation: coreFloat 4s ease-in-out infinite;
+    }
+    
+    @keyframes coreFloat {
+      0%, 100% { transform: translateY(0) rotateX(20deg) rotateY(10deg); }
+      50% { transform: translateY(-20px) rotateX(10deg) rotateY(-10deg); }
+    }
+    
+    .ring {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transform-style: preserve-3d;
+    }
+    
+    .ring-1 {
+      border-top: 2px solid #06b6d4;
+      border-right: 2px solid #06b6d4;
+      animation: spinX 6s linear infinite;
+      box-shadow: inset 0 0 15px rgba(6, 182, 212, 0.3), 0 0 15px rgba(6, 182, 212, 0.3);
+    }
+    
+    .ring-2 {
+      width: 140px; height: 140px;
+      top: 30px; left: 30px;
+      border-bottom: 2px solid #8b5cf6;
+      border-left: 2px solid #8b5cf6;
+      animation: spinY 4s linear infinite;
+      box-shadow: inset 0 0 15px rgba(139, 92, 246, 0.3), 0 0 15px rgba(139, 92, 246, 0.3);
+    }
+    
+    .ring-3 {
+      width: 80px; height: 80px;
+      top: 60px; left: 60px;
+      border-top: 2px solid #10b981;
+      border-bottom: 2px solid #10b981;
+      animation: spinZ 3s linear infinite;
+      box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.4), 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+    
+    .core-orb {
+      position: absolute;
+      top: 85px; left: 85px;
+      width: 30px; height: 30px;
+      background: radial-gradient(circle, #fff, #8b5cf6 40%, transparent 80%);
+      border-radius: 50%;
+      box-shadow: 0 0 30px 10px rgba(139, 92, 246, 0.8), 0 0 60px 20px rgba(6, 182, 212, 0.6);
+      animation: pulseCore 2s ease-in-out infinite;
+    }
+    
+    @keyframes spinX { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg); } }
+    @keyframes spinY { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(180deg) rotateY(360deg) rotateZ(180deg); } }
+    @keyframes spinZ { 0% { transform: rotateX(45deg) rotateY(45deg) rotateZ(0deg); } 100% { transform: rotateX(45deg) rotateY(45deg) rotateZ(360deg); } }
+    
+    @keyframes pulseCore {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 50px 20px rgba(139, 92, 246, 1), 0 0 80px 30px rgba(6, 182, 212, 0.8); }
+    }
+    
+    .floating-hologram {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      text-align: center;
+      perspective: 500px;
+    }
+    /* --- HIGH GRAPHICS PRODUCT CARD ANIMATIONS --- */
+    .product-card {
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+      transform-style: preserve-3d;
+      overflow: hidden;
+    }
+    .product-card:hover {
+      transform: translateY(-12px) scale(1.02) perspective(1000px) rotateX(2deg) rotateY(2deg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px rgba(139, 92, 246, 0.4), 0 0 15px rgba(6, 182, 212, 0.3);
+      border-color: rgba(139, 92, 246, 0.5);
+      z-index: 10;
+    }
+    .product-card .img-wrap {
+      overflow: hidden;
+      position: relative;
+      height: 200px;
+    }
+    .product-card .img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .product-card:hover .img-wrap img {
+      transform: scale(1.15);
+    }
+    /* Glossy Shine Effect */
+    .product-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
+      transform: skewX(-25deg);
+      transition: 0.7s;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .product-card:hover::after {
+      left: 200%;
+    }
+
+    .holo-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.8), transparent);
+      margin: 4px auto;
+      width: 0%;
+      animation: scanLine 2s ease-in-out infinite alternate;
+    }
+    
+    .holo-line:nth-child(2) { width: 60%; animation-delay: 0.3s; background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), transparent); }
+    .holo-line:nth-child(3) { width: 40%; animation-delay: 0.6s; }
+    
+    @keyframes scanLine {
+      0% { width: 0%; opacity: 0; }
+      50% { opacity: 1; }
+      100% { width: 100%; opacity: 0; }
+    }
+    
+    .holo-text {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      letter-spacing: 4px;
+      font-weight: 800;
+      color: #06b6d4;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(6, 182, 212, 0.8);
+      animation: textGlitch 4s infinite;
+    }
+    
+    @keyframes textGlitch {
+      0%, 96%, 100% { opacity: 1; transform: skewX(0deg); }
+      97% { opacity: 0.5; transform: skewX(20deg); }
+      98% { opacity: 0.8; transform: skewX(-20deg); }
+      99% { opacity: 1; transform: skewX(10deg); text-shadow: 2px 0 0 #f00, -2px 0 0 #0f0; }
+    }
+  </style>
+</section>
+
+<div class="filter-bar container" id="catalog">
+  <input class="search-input" id="searchInput" placeholder="🔍  Search products, categories…" oninput="filterProducts()"/>
+  <div class="filter-chips" id="categoryChips">
+    <div class="chip active" data-cat="all" onclick="selectCat(this)">All</div>
+  </div>
+</div>
+
+<!-- ═══ MANUFACTURING PIPELINE ANIMATION ═══ -->
+<style>
+  .pipeline-section { padding:4rem 2rem; overflow:hidden; position:relative; }
+  .pipeline-title { text-align:center; font-size:2rem; font-weight:800; margin-bottom:.5rem; background:linear-gradient(135deg,#8b5cf6,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .pipeline-sub { text-align:center; color:#8b949e; margin-bottom:3rem; font-size:1rem; }
+
+  .pipeline-track {
+    display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:nowrap;
+    max-width:1100px; margin:0 auto; position:relative;
+  }
+  .pipeline-step {
+    flex:1; min-width:160px; text-align:center; position:relative; z-index:1;
+    padding:1.5rem 1rem; transition:transform .4s ease;
+  }
+  .pipeline-step:hover { transform:translateY(-8px); }
+  .step-icon {
+    width:70px; height:70px; border-radius:50%; margin:0 auto .8rem;
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem;
+    position:relative; overflow:hidden;
+  }
+  .step-icon::after {
+    content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
+    background:conic-gradient(from var(--a,0deg), transparent, rgba(255,255,255,0.15), transparent);
+    animation: spinGlow 4s linear infinite;
+  }
+  @keyframes spinGlow { to { --a:360deg; } }
+  @property --a { syntax:'<angle>'; inherits:false; initial-value:0deg; }
+
+  .step-icon.raw    { background:linear-gradient(135deg,#7c3aed,#4c1d95); box-shadow:0 0 25px rgba(124,58,237,.4); }
+  .step-icon.proc   { background:linear-gradient(135deg,#2563eb,#1e40af); box-shadow:0 0 25px rgba(37,99,235,.4); }
+  .step-icon.qa     { background:linear-gradient(135deg,#059669,#064e3b); box-shadow:0 0 25px rgba(5,150,105,.4); }
+  .step-icon.pack   { background:linear-gradient(135deg,#d97706,#92400e); box-shadow:0 0 25px rgba(217,119,6,.4); }
+  .step-icon.ship   { background:linear-gradient(135deg,#dc2626,#991b1b); box-shadow:0 0 25px rgba(220,38,38,.4); }
+
+  .step-label { font-weight:700; font-size:.88rem; color:#e2e8f0; margin-bottom:.3rem; }
+  .step-desc { font-size:.75rem; color:#8b949e; line-height:1.4; }
+
+  /* Animated connecting arrows */
+  .pipeline-arrow {
+    width:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center; position:relative;
+  }
+  .pipeline-arrow::before {
+    content:''; width:100%; height:2px;
+    background:linear-gradient(90deg, rgba(139,92,246,.6), rgba(6,182,212,.6));
+    position:relative;
+  }
+  .pipeline-arrow .dot-flow {
+    position:absolute; width:8px; height:8px; border-radius:50%; background:#8b5cf6;
+    box-shadow:0 0 10px #8b5cf6;
+    animation: flowDot 2s ease infinite;
+  }
+  @keyframes flowDot { 0% { left:0; opacity:1; } 100% { left:calc(100% - 8px); opacity:0; } }
+  .pipeline-arrow:nth-child(4) .dot-flow { animation-delay:.4s; }
+  .pipeline-arrow:nth-child(6) .dot-flow { animation-delay:.8s; }
+  .pipeline-arrow:nth-child(8) .dot-flow { animation-delay:1.2s; }
+
+  @media(max-width:768px) {
+    .pipeline-track { flex-wrap:wrap; gap:1rem; }
+    .pipeline-arrow { display:none; }
+  }
+</style>
+
+<div class="pipeline-section">
+  <div class="pipeline-title scroll-reveal">⚙️ How We Manufacture</div>
+  <div class="pipeline-sub scroll-reveal">From raw materials to your doorstep — our automated production pipeline</div>
+
+  <div class="pipeline-track">
+    <div class="pipeline-step scroll-reveal">
+      <div class="step-icon raw">🪨</div>
+      <div class="step-label">Raw Materials</div>
+      <div class="step-desc">Steel, copper, polymers sourced from verified suppliers</div>
+    </div>
+    <div class="pipeline-arrow"><div class="dot-flow"></div></div>
+    <div class="pipeline-step scroll-reveal">
+      <div class="step-icon proc">🏭</div>
+      <div class="step-label">CNC Processing</div>
+      <div class="step-desc">Precision machining, forging & heat treatment</div>
+    </div>
+    <div class="pipeline-arrow"><div class="dot-flow"></div></div>
+    <div class="pipeline-step scroll-reveal">
+      <div class="step-icon qa">🔬</div>
+      <div class="step-label">Quality Check</div>
+      <div class="step-desc">ISO 9001 certified inspection at every stage</div>
+    </div>
+    <div class="pipeline-arrow"><div class="dot-flow"></div></div>
+    <div class="pipeline-step scroll-reveal">
+      <div class="step-icon pack">📦</div>
+      <div class="step-label">Packaging</div>
+      <div class="step-desc">Anti-corrosion coated & industrial-grade packed</div>
+    </div>
+    <div class="pipeline-arrow"><div class="dot-flow"></div></div>
+    <div class="pipeline-step scroll-reveal">
+      <div class="step-icon ship">🚚</div>
+      <div class="step-label">Delivery</div>
+      <div class="step-desc">Pan-India logistics with real-time tracking</div>
+    </div>
+  </div>
+
+  <!-- User Features instead of Profit Margins -->
+  <div class="profit-grid">
+    <div class="profit-card scroll-reveal" style="--accent1:#8b5cf6;--accent2:#6d28d9">
+      <div class="profit-label">Quality Assurance</div>
+      <div class="profit-val" style="color:#a78bfa">ISO 9001</div>
+      <div class="profit-sub">Certified Manufacturing</div>
+    </div>
+    <div class="profit-card scroll-reveal" style="--accent1:#06b6d4;--accent2:#0891b2">
+      <div class="profit-label">Logistics</div>
+      <div class="profit-val" style="color:#22d3ee">Pan-India</div>
+      <div class="profit-sub">Fast & Secure Delivery</div>
+    </div>
+    <div class="profit-card scroll-reveal" style="--accent1:#10b981;--accent2:#059669">
+      <div class="profit-label">Support</div>
+      <div class="profit-val" style="color:#34d399">24/7 AI</div>
+      <div class="profit-sub">Smart Chat Assistant</div>
+    </div>
+    <div class="profit-card scroll-reveal" style="--accent1:#f59e0b;--accent2:#d97706">
+      <div class="profit-label">Pricing</div>
+      <div class="profit-val" style="color:#fbbf24">B2B Bulk</div>
+      <div class="profit-sub">Wholesale Margins</div>
+    </div>
+  </div>
+</div>
+
+<div id="catalog"></div>
+<div class="container section">
+  <div id="loadingSpinner" class="spinner"></div>
+  <div class="products-grid" id="productsGrid" style="display:none"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">📦</div>
+    <h3>No products found</h3>
+    <p>Try a different search or category.</p>
+  </div>
+</div>
+
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/js/auth.js"></script>
+<script src="/js/products.js"></script>
+<script>
+  const API = BASE_URL;
+  let allProducts = [], currentCat = 'all';
+
+  async function init() {
+    updateNav();
+    await loadCategories();
+    await loadProducts();
+  }
+
+  async function loadCategories() {
+    try {
+      const res = await fetch(`${API}/api/products/categories`);
+      const cats = await res.json();
+      const chips = document.getElementById('categoryChips');
+      cats.forEach(cat => {
+        const d = document.createElement('div');
+        d.className = 'chip';
+        d.dataset.cat = cat;
+        d.textContent = cat;
+        d.onclick = function(){ selectCat(this); };
+        chips.appendChild(d);
+      });
+    } catch(e) {}
+  }
+
+  async function loadProducts() {
+    try {
+      const res = await fetch(`${API}/api/products`);
+      allProducts = await res.json();
+      renderProducts(allProducts);
+    } catch(e) {
+      showToast('Failed to load products', 'error');
+    } finally {
+      document.getElementById('loadingSpinner').style.display = 'none';
+    }
+  }
+
+  function selectCat(el) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    currentCat = el.dataset.cat;
+    filterProducts();
+  }
+
+  function filterProducts() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allProducts.filter(p => {
+      const matchCat = currentCat === 'all' || p.category === currentCat;
+      const matchQ   = !q || p.name.toLowerCase().includes(q)
+                           || (p.category||'').toLowerCase().includes(q)
+                           || (p.description||'').toLowerCase().includes(q);
+      return matchCat && matchQ;
+    });
+    renderProducts(filtered);
+  }
+
+  function catIcon(cat) {
+    const icons = {
+      'Fasteners':'🔩','Sheet Metal':'🪛','Electrical':'⚡','Hydraulics':'💧',
+      'Bearings':'⚙️','Piping':'🔧','Power Transmission':'🔄','Cutting Tools':'🗡️',
+      'Pneumatics':'💨','Seals & Gaskets':'🔘','Electric Motors':'🔌','Welding':'🔥',
+      'Valves':'🚰','Lubricants':'🛢️','Filtration':'🔵'
+    };
+    return icons[cat] || '📦';
+  }
+
+  function renderProducts(list) {
+    const grid  = document.getElementById('productsGrid');
+    const empty = document.getElementById('emptyState');
+    grid.innerHTML = '';
+    
+    if (!list.length) {
+      grid.style.display = 'none'; 
+      empty.style.display = 'block'; 
+      return;
+    }
+    
+    grid.style.display = 'grid'; 
+    empty.style.display = 'none';
+    
+    list.forEach((p, index) => {
+      const stockClass = p.stock_quantity === 0 ? 'stock-out'
+                       : p.stock_quantity < 100 ? 'stock-low' : 'stock-ok';
+      
+      const stockLabel = p.stock_quantity === 0 ? 'Out of Stock'
+                       : p.stock_quantity < 100 ? 'Low Stock' : 'In Stock';
+                       
+      // Premium Unsplash Fallback Images mapping based on Category or Name
+      let premiumImage = p.image_url;
+      if (!premiumImage || premiumImage === 'null' || premiumImage.trim() === '') {
+        const textToMatch = ((p.category || '') + ' ' + (p.name || '')).toLowerCase();
+        
+        const imageMap = {
+          'bearing': 'https://images.unsplash.com/photo-1580983546522-836706e22f26?w=500&q=80',
+          'cutting': 'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500&q=80',
+          'motor': 'https://images.unsplash.com/photo-1581092335397-9583eb92d232?w=500&q=80',
+          'electric': 'https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=500&q=80',
+          'fastener': 'https://images.unsplash.com/photo-1586864387789-628af9feed72?w=500&q=80',
+          'nut': 'https://images.unsplash.com/photo-1586864387789-628af9feed72?w=500&q=80',
+          'bolt': 'https://images.unsplash.com/photo-1586864387789-628af9feed72?w=500&q=80',
+          'filtration': 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&q=80',
+          'filter': 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&q=80',
+          'hydraulic': 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=500&q=80',
+          'steel': 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&q=80',
+          'valve': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&q=80',
+          'safety': 'https://images.unsplash.com/photo-1582131503261-f28d22f2cb8b?w=500&q=80',
+          'pipe': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&q=80'
+        };
+
+        let found = false;
+        for (const [key, url] of Object.entries(imageMap)) {
+          if (textToMatch.includes(key)) {
+            premiumImage = url;
+            found = true;
+            break;
+          }
+        }
+        
+        if (!found) {
+          const fallbacks = [
+            'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&q=80',
+            'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=500&q=80',
+            'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=500&q=80',
+            'https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=500&q=80'
+          ];
+          premiumImage = fallbacks[(p.id || 0) % fallbacks.length];
+        }
+      }
+
+      const backupImg = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&q=80";
+      const imgHtml = `<img src="${premiumImage}" alt="${p.name}" loading="lazy" onerror="this.onerror=null; this.src='${backupImg}';" />`;
+      
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.style.animationDelay = `${index * 0.05}s`;
+      card.onclick = () => location.href = `/product.html?id=${p.id}`;
+      card.innerHTML = `
+        <div class="img-wrap">${imgHtml}</div>
+        <div class="card-body">
+          <span class="category-badge">${p.category || 'General'}</span>
+          <h3>${p.name}</h3>
+          <div class="price">₹${parseFloat(p.price).toLocaleString('en-IN')} / ${p.unit}</div>
+          <span class="stock-badge ${stockClass}">${stockLabel} (${p.stock_quantity.toLocaleString()})</span>
+          <div class="min-bulk">Min. bulk order: ${p.min_bulk_qty} ${p.unit}</div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  init();
+</script>
+<div id="contactModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(5px); opacity:0; transition: opacity 0.3s ease;">
+  <style>
+    .contact-btn { display:flex; align-items:center; justify-content:center; gap:0.8rem; background:#1e212b; color:#fff; text-decoration:none; padding:1rem; border-radius:8px; font-weight:600; border:1px solid #2d3342; transition:all 0.2s; }
+    .contact-btn:hover { background:#2a2d3a; border-color:#8b5cf6; transform:translateY(-2px); box-shadow:0 10px 20px rgba(0,0,0,0.3); }
+    .wa-btn { background:#10b981; border:none; color:#fff; font-weight:700; box-shadow:0 4px 15px rgba(16,185,129,0.3); }
+    .wa-btn:hover { background:#059669; transform:translateY(-2px); box-shadow:0 10px 25px rgba(16,185,129,0.4); }
+  </style>
+  <div class="contact-modal-content" style="background:#15181e; border:1px solid #8b5cf6; border-radius:16px; padding:3rem; width:90%; max-width:450px; text-align:center; box-shadow:0 0 40px rgba(139,92,246,0.2); transform:translateY(30px) scale(0.95); transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+    <h2 style="color:#00ff88; font-size:2rem; margin-bottom:1rem; font-weight:800;">Get in Touch</h2>
+    <p style="color:#8b949e; margin-bottom:2.5rem;">Select your preferred contact method</p>
+    
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <a href="tel:+919548801236" onclick="logContact('phone')" class="contact-btn">
+        <span style="font-size:1.4rem">📞</span> +91 9548801236
+      </a>
+      <a href="mailto:ayush954880@gmail.com" onclick="logContact('email')" class="contact-btn">
+        <span style="font-size:1.4rem">✉️</span> ayush954880@gmail.com
+      </a>
+      <a href="https://wa.me/919548801236" target="_blank" onclick="logContact('whatsapp')" class="contact-btn wa-btn">
+        <span style="font-size:1.4rem">💬</span> WhatsApp Connect
+      </a>
+    </div>
+    <button onclick="closeContactModal()" style="margin-top:2.5rem; background:transparent; border:none; color:#8b949e; font-size:1rem; font-weight:600; cursor:pointer; text-decoration:underline;">Close</button>
+  </div>
+</div>
+
+<script>
+  function openContactModal(e) {
+    if(e) e.preventDefault();
+    const modal = document.getElementById('contactModal');
+    const content = modal.querySelector('.contact-modal-content');
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      content.style.transform = 'translateY(0) scale(1)';
+    }, 10);
+    logContact('opened_modal');
+  }
+  
+  function closeContactModal() {
+    const modal = document.getElementById('contactModal');
+    const content = modal.querySelector('.contact-modal-content');
+    modal.style.opacity = '0';
+    content.style.transform = 'translateY(30px) scale(0.95)';
+    setTimeout(() => modal.style.display = 'none', 400);
+  }
+  
+  function logContact(method) {
+    fetch('/api/contact/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('mms_token') || '') },
+      body: JSON.stringify({ action: method })
+    }).catch(console.error);
+  }
+</script>
+<script src="/js/visual-engine.js"></script>
+
+<script src="/js/chatbot.js"></script>
+<script src="/js/user-notifications.js"></script>
+<script src="/js/voice-mode.js"></script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Detail — MMS Industries</title>
+  <meta name="description" content="View product details and place a bulk order."/>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/index.html" class="nav-brand">⚙️ MMS<span>Industries</span></a>
+  <div class="nav-links">
+    <a href="/index.html">← Back to Products</a>
+    <a href="/orders.html" id="nav-orders" style="display:none">My Orders</a>
+    <a href="/profile.html" id="nav-profile" style="display:none">My Profile</a>
+    <a href="/admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    <a href="/portal.html" id="nav-login">Login</a>
+    <a href="#" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+    <div id="userNotifBell" class="notif-item" onclick="toggleUserNotifPanel()" style="display:none;cursor:pointer;align-items:center;justify-content:center;gap:.5rem;background:rgba(139,92,246,.12);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(139,92,246,.4);border-radius:10px;padding:.4rem .8rem;font-size:.9rem;font-weight:700;color:#eaddff;-webkit-text-fill-color:initial;transition:all .3s;position:relative;text-align:center;overflow:hidden;box-shadow:inset 1px 0 0 rgba(255,255,255,0.1), 0 4px 15px rgba(0,0,0,0.2);margin-left:.5rem;">
+      <span style="z-index: 2; position: relative; -webkit-text-fill-color:#eaddff;">🔔 Alerts</span>
+      <span id="userNotifBadge" style="display:none;background:#ef4444;color:#fff;-webkit-text-fill-color:#fff;border-radius:99px;font-size:.7rem;font-weight:700;padding:.1rem .4rem;min-width:18px;text-align:center;z-index: 2;position: relative;">0</span>
+    </div>
+    <span id="nav-user" style="color:var(--muted2);font-size:.85rem;display:none;margin-left:.5rem;"></span>
+  </div>
+</nav>
+
+<div class="product-detail-page">
+  <div id="loadingSpinner" class="spinner"></div>
+  <div id="productContent" style="display:none">
+    <div class="detail-grid">
+      <!-- Image -->
+      <div>
+        <div class="detail-img" id="productImg">
+          <div class="big-icon" id="productIcon">📦</div>
+        </div>
+        <div style="margin-top:1rem">
+          <span class="category-badge" id="productCat"></span>
+          <span class="stock-badge" id="stockBadge" style="margin-left:.5rem"></span>
+        </div>
+      </div>
+      <!-- Info -->
+      <div class="detail-info">
+        <h1 id="productName"></h1>
+        <div class="detail-price" id="productPrice"></div>
+        <p class="detail-desc" id="productDesc"></p>
+
+        <div class="card" style="margin-bottom:1.5rem;padding:1rem">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted2);margin-bottom:.4rem">
+            <span>Available Stock</span><strong id="stockQty" style="color:var(--text)"></strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted2)">
+            <span>Min. Bulk Order</span><strong id="minBulk" style="color:var(--warning)"></strong>
+          </div>
+        </div>
+
+        <div id="orderSection">
+          <label style="font-size:.85rem;color:var(--muted2);font-weight:500;display:block;margin-bottom:.5rem">
+            Select Quantity
+          </label>
+          <div class="qty-control">
+            <button class="qty-btn" onclick="changeQty(-1)">−</button>
+            <input  class="qty-input" id="qtyInput" type="number" value="10" min="1" oninput="updateTotal()"/>
+            <button class="qty-btn" onclick="changeQty(1)">+</button>
+          </div>
+          <p class="total-price" id="totalPrice">Total: <strong>₹0.00</strong></p>
+          <p id="bulkWarning" style="color:var(--danger);font-size:.82rem;margin-bottom:1rem;display:none"></p>
+          <button class="btn btn-primary" id="buyBtn" onclick="initiatePurchase()" style="width:100%;padding:.9rem">
+            🛒 Place Bulk Order
+          </button>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:.6rem;text-align:center">
+            Bulk orders only · Login required to purchase
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-icon">✅</div>
+    <h2>Order Confirmed!</h2>
+    <p>Your bulk order has been placed successfully.</p>
+    <div class="conf-number" id="confNumber"></div>
+    <div id="confDetails" style="text-align:left;margin-bottom:1.5rem;font-size:.88rem;color:var(--muted2)"></div>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+      <a href="/orders.html" class="btn btn-primary">View My Orders</a>
+      <button class="btn btn-secondary" onclick="closeModal()">Continue Shopping</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Payment Gateway Modal -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-box" style="max-width:500px;position:relative;overflow:hidden">
+    
+    <!-- Processing overlay -->
+    <div class="processing-overlay" id="processingOverlay">
+      <div class="processing-spinner"></div>
+      <h3 style="color:#fff;margin-bottom:.5rem">Processing Payment...</h3>
+      <p style="color:var(--muted2);font-size:.85rem">Please do not close this window</p>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="font-size:1.3rem;margin:0">Checkout</h2>
+      <button class="btn btn-secondary btn-sm" onclick="closePaymentModal()">✕</button>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.03);padding:1rem;border-radius:10px;margin-bottom:1.5rem;text-align:left;border:1px solid rgba(255,255,255,0.05)">
+      <div style="font-size:.85rem;color:var(--muted2)">Total Payable Amount</div>
+      <div id="paymentTotalAmount" style="font-size:1.6rem;font-weight:800;color:var(--secondary)">₹0.00</div>
+    </div>
+
+    <!-- Shipping Details -->
+    <div style="text-align:left; margin-bottom: 1.5rem;">
+      <h3 style="font-size:1rem; margin-bottom: 1rem; color: var(--text);">Shipping Details</h3>
+      <div class="form-group">
+        <label>Full Delivery Address</label>
+        <textarea id="shippingAddress" class="form-control" rows="2" placeholder="Building, Street, City, Pincode" style="resize:vertical"></textarea>
+      </div>
+      <div class="form-group" style="margin-top: .8rem;">
+        <label>Phone Number</label>
+        <input type="text" id="phoneNumber" class="form-control" placeholder="+91 9876543210"/>
+      </div>
+    </div>
+
+    <div class="payment-tabs">
+      <button class="payment-tab-btn active" onclick="switchPaymentTab('card', this)">💳 Card</button>
+      <button class="payment-tab-btn" onclick="switchPaymentTab('upi', this)">📱 UPI</button>
+      <button class="payment-tab-btn" onclick="switchPaymentTab('netbanking', this)">🏦 Netbanking</button>
+      <button class="payment-tab-btn" onclick="switchPaymentTab('cod', this)">🚚 COD</button>
+    </div>
+
+    <div class="payment-pane active" id="pane-card">
+      <div class="form-group">
+        <label>Card Number</label>
+        <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19"/>
+      </div>
+      <div style="display:flex;gap:1rem">
+        <div class="form-group" style="flex:1">
+          <label>Expiry Date</label>
+          <input type="text" class="form-control" placeholder="MM/YY" maxlength="5"/>
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>CVV</label>
+          <input type="password" class="form-control" placeholder="123" maxlength="3"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Name on Card</label>
+        <input type="text" class="form-control" placeholder="John Doe"/>
+      </div>
+    </div>
+
+    <div class="payment-pane" id="pane-upi">
+      <div class="form-group">
+        <label>UPI ID (VPA)</label>
+        <input type="text" class="form-control" placeholder="example@upi"/>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted2)">You will receive a payment request on your UPI app.</p>
+    </div>
+
+    <div class="payment-pane" id="pane-netbanking">
+      <div class="form-group">
+        <label>Select Bank</label>
+        <select class="form-control">
+          <option>State Bank of India</option>
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>Axis Bank</option>
+          <option>Kotak Mahindra Bank</option>
+        </select>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted2)">You will be redirected to your bank's secure page.</p>
+    </div>
+
+    <div class="payment-pane" id="pane-cod">
+      <div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:1rem;border-radius:8px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:.5rem">📦</div>
+        <div style="font-weight:600;color:#fbbf24;margin-bottom:.3rem">Pay on Delivery</div>
+        <p style="font-size:.85rem;color:var(--muted2);margin:0">You can pay via Cash, UPI, or Card when the shipment arrives.</p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem;padding:.8rem" id="payNowBtn" onclick="processPayment()">Pay Now</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/auth.js"></script>
+<script>
+  const API = '';
+  let product = null;
+
+  const catIcons = {
+    'Fasteners':'🔩','Sheet Metal':'🪛','Electrical':'⚡','Hydraulics':'💧',
+    'Bearings':'⚙️','Piping':'🔧','Power Transmission':'🔄','Cutting Tools':'🗡️',
+    'Pneumatics':'💨','Seals & Gaskets':'🔘','Electric Motors':'🔌','Welding':'🔥',
+    'Valves':'🚰','Lubricants':'🛢️','Filtration':'🔵'
+  };
+
+  async function init() {
+    updateNav();
+    const id = new URLSearchParams(location.search).get('id');
+    if (!id) return location.href = '/index.html';
+
+    try {
+      const res = await fetch(`${API}/api/products/${id}`);
+      if (!res.ok) throw new Error();
+      product = await res.json();
+      renderProduct();
+    } catch {
+      showToast('Product not found', 'error');
+      setTimeout(() => location.href = '/index.html', 1500);
+    } finally {
+      document.getElementById('loadingSpinner').style.display = 'none';
+    }
+  }
+
+  function renderProduct() {
+    document.title = `${product.name} — MMS Industries`;
+    document.getElementById('productContent').style.display = 'block';
+    document.getElementById('productName').textContent  = product.name;
+    document.getElementById('productDesc').textContent  = product.description || 'No description available.';
+    document.getElementById('productCat').textContent   = product.category || 'General';
+    document.getElementById('productPrice').textContent = `₹${parseFloat(product.price).toLocaleString('en-IN')} / ${product.unit}`;
+    document.getElementById('stockQty').textContent     = `${product.stock_quantity.toLocaleString()} ${product.unit}`;
+    document.getElementById('minBulk').textContent      = `${product.min_bulk_qty} ${product.unit}`;
+
+    const sb = document.getElementById('stockBadge');
+    if (product.stock_quantity === 0) { sb.className = 'stock-badge stock-out'; sb.textContent = 'Out of Stock'; }
+    else if (product.stock_quantity < 100) { sb.className = 'stock-badge stock-low'; sb.textContent = 'Low Stock'; }
+    else { sb.className = 'stock-badge stock-ok'; sb.textContent = 'In Stock'; }
+
+    if (product.image_url) {
+      document.getElementById('productImg').innerHTML = `<img src="${product.image_url}" alt="${product.name}"/>`;
+    } else {
+      document.getElementById('productIcon').textContent = catIcons[product.category] || '📦';
+    }
+
+    const qty = document.getElementById('qtyInput');
+    qty.min   = product.min_bulk_qty;
+    qty.value = product.min_bulk_qty;
+    updateTotal();
+
+    if (product.stock_quantity === 0) {
+      document.getElementById('buyBtn').disabled = true;
+      document.getElementById('buyBtn').textContent = 'Out of Stock';
+    } else if (getUser() && getUser().role === 'admin') {
+      document.getElementById('buyBtn').disabled = true;
+      document.getElementById('buyBtn').textContent = 'Admins Cannot Order';
+    }
+  }
+
+  function changeQty(delta) {
+    const inp = document.getElementById('qtyInput');
+    inp.value = Math.max(product.min_bulk_qty, parseInt(inp.value||0) + delta * product.min_bulk_qty);
+    updateTotal();
+  }
+
+  function updateTotal() {
+    if (!product) return;
+    const qty = parseInt(document.getElementById('qtyInput').value || 0);
+    const total = qty * parseFloat(product.price);
+    document.getElementById('totalPrice').innerHTML =
+      `Total: <strong>₹${total.toLocaleString('en-IN', {minimumFractionDigits:2})}</strong>`;
+    const warn = document.getElementById('bulkWarning');
+    if (qty < product.min_bulk_qty) {
+      warn.style.display = 'block';
+      warn.textContent = `⚠ Minimum order is ${product.min_bulk_qty} ${product.unit}`;
+    } else { warn.style.display = 'none'; }
+  }
+
+  function initiatePurchase() {
+    if (!getToken()) { showToast('Please login to place an order', 'error'); setTimeout(()=>location.href='/login.html',1200); return; }
+    if (getUser() && getUser().role === 'admin') { showToast('Admins cannot place orders', 'error'); return; }
+    
+    const qty = parseInt(document.getElementById('qtyInput').value);
+    if (qty < product.min_bulk_qty) { showToast(`Min order: ${product.min_bulk_qty} ${product.unit}`, 'error'); return; }
+
+    const total = qty * parseFloat(product.price);
+    document.getElementById('paymentTotalAmount').textContent = `₹${total.toLocaleString('en-IN', {minimumFractionDigits:2})}`;
+    
+    // Reset payment modal state
+    switchPaymentTab('card', document.querySelector('.payment-tab-btn'));
+    document.getElementById('processingOverlay').classList.remove('show');
+    document.getElementById('paymentModal').classList.add('show');
+  }
+
+  function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('show');
+  }
+
+  let currentPaymentMethod = 'card';
+
+  function switchPaymentTab(tab, btn) {
+    currentPaymentMethod = tab;
+    document.querySelectorAll('.payment-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.payment-pane').forEach(p => p.classList.remove('active'));
+    
+    btn.classList.add('active');
+    document.getElementById(`pane-${tab}`).classList.add('active');
+    
+    const payBtn = document.getElementById('payNowBtn');
+    if(tab === 'cod') {
+      payBtn.textContent = 'Confirm Order (COD)';
+    } else {
+      const qty = parseInt(document.getElementById('qtyInput').value || 0);
+      const total = qty * parseFloat(product.price);
+      payBtn.textContent = `Pay ₹${total.toLocaleString('en-IN')}`;
+    }
+  }
+
+  async function processPayment() {
+    const address = document.getElementById('shippingAddress').value.trim();
+    const phone = document.getElementById('phoneNumber').value.trim();
+    if (!address || !phone) {
+      showToast('Please provide a shipping address and phone number', 'error');
+      return;
+    }
+
+    // Show processing state
+    document.getElementById('processingOverlay').classList.add('show');
+    
+    // Simulate network delay / bank verification
+    setTimeout(async () => {
+      document.getElementById('paymentModal').classList.remove('show');
+      document.getElementById('processingOverlay').classList.remove('show');
+      await placeOrder(currentPaymentMethod, address, phone);
+    }, 1500);
+  }
+
+  async function placeOrder(paymentMethod, address, phone) {
+    const qty = parseInt(document.getElementById('qtyInput').value);
+
+    try {
+      const res  = await fetch(`${API}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${getToken()}` },
+        body: JSON.stringify({ 
+          items: [{ product_id: product.id, quantity: qty }],
+          payment_method: paymentMethod,
+          shipping_address: address,
+          phone_number: phone
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      document.getElementById('confNumber').textContent = data.confirmationNumber;
+      document.getElementById('confDetails').innerHTML  =
+        `<p><b>${product.name}</b></p>
+         <p>Quantity: ${qty} ${product.unit}</p>
+         <p>Total: ₹${parseFloat(data.totalAmount).toLocaleString('en-IN',{minimumFractionDigits:2})}</p>`;
+      document.getElementById('confirmModal').classList.add('show');
+    } catch(err) {
+      showToast(err.message, 'error');
+      btn.disabled = false; btn.textContent = '🛒 Place Bulk Order';
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+  }
+
+  // Handle escape key to close modals
+  window.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') {
+      closeModal();
+      closePaymentModal();
+    }
+  });
+
+  init();
+</script>
+<script src="/js/visual-engine.js"></script>
+<script src="/js/chatbot.js"></script>
+<script src="/js/user-notifications.js"></script>
+<script src="/js/voice-mode.js"></script>
+</body>
+</html>

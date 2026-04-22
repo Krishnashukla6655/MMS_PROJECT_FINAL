@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Register — MMS Industries</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+    body { background: #12141a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 0; }
+    .wrapper { width: 100%; max-width: 460px; padding: 2rem; }
+    
+    .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .tab {
+      flex: 1; padding: 1rem; text-align: center; border-radius: 6px; text-decoration: none;
+      font-weight: 600; font-size: 0.95rem; border: 1px solid #232730; background: #15181e; color: #8b949e;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;
+    }
+    .tab.active { border-color: #8b5cf6; color: #8b5cf6; }
+    .tab:hover:not(.active) { background: #1c2028; color: #fff; }
+
+    .box { background: #15181e; border: 1px solid #232730; border-radius: 8px; padding: 3rem 2.5rem; text-align: center; }
+    .title { color: #fff; font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; }
+    .desc { color: #8b949e; font-size: 0.95rem; margin-bottom: 2.5rem; }
+    
+    .input-group { text-align: left; margin-bottom: 1.5rem; }
+    .input-group label { display: block; color: #8b949e; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-group input {
+      width: 100%; background: #0f1115; border: 1px solid #232730; padding: 1rem; border-radius: 6px;
+      color: #fff; font-size: 1rem; outline: none; transition: border-color 0.2s;
+    }
+    .input-group input:focus { border-color: #8b5cf6; }
+    
+    .btn {
+      width: 100%; background: #8b5cf6; color: #fff; border: none; padding: 1rem; border-radius: 6px;
+      font-size: 1.05rem; font-weight: 700; cursor: pointer; margin-top: 1rem; margin-bottom: 2rem; 
+      display: flex; justify-content: center; align-items: center; gap: 0.5rem; transition: background 0.2s;
+    }
+    .btn:hover { background: #7c3aed; }
+    
+    .back-link { color: #8b5cf6; text-decoration: none; font-weight: 700; font-size: 1.05rem; }
+    .back-link:hover { text-decoration: underline; }
+    
+    .form-msg { color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="tabs">
+      <a href="/admin-login.html" class="tab">→] Admin Login</a>
+      <a href="/admin-register.html" class="tab active">+ Register Admin</a>
+    </div>
+
+    <div class="box">
+      <div class="title">Admin Terminal</div>
+      <div class="desc">Max 2 admin accounts allowed</div>
+
+      <div id="formMsg" class="form-msg"></div>
+
+      <form id="registerForm" onsubmit="handleAdminRegister(event)">
+        <div class="input-group">
+          <label>FULL NAME</label>
+          <input type="text" id="name" placeholder="Enter admin name" required/>
+        </div>
+
+        <div class="input-group">
+          <label>EMAIL</label>
+          <input type="email" id="email" placeholder="Enter admin email" required/>
+        </div>
+        
+        <div class="input-group">
+          <label>PASSWORD</label>
+          <input type="password" id="password" placeholder="Min 6 characters" required minlength="6"/>
+        </div>
+
+        <div class="input-group">
+          <label>CONFIRM PASSWORD</label>
+          <input type="password" id="confirmPwd" placeholder="Re-enter password" required/>
+        </div>
+
+        <button type="submit" class="btn" id="regBtn">+ Register Admin</button>
+      </form>
+
+      <a href="/portal.html" class="back-link">Back to Home</a>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    if (getToken()) {
+      const u = getUser();
+      location.href = u && u.role === 'admin' ? '/admin/dashboard.html' : '/index.html';
+    }
+
+    async function handleAdminRegister(e) {
+      e.preventDefault();
+      const msg = document.getElementById('formMsg');
+      const btn = document.getElementById('regBtn');
+      msg.textContent = '';
+      
+      const pwd = document.getElementById('password').value;
+      if (pwd !== document.getElementById('confirmPwd').value) {
+        msg.textContent = 'Passwords do not match'; return;
+      }
+      
+      btn.disabled = true; btn.textContent = 'Processing...';
+      try {
+        const res  = await fetch('/api/auth/register', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            name:     document.getElementById('name').value.trim(),
+            email:    document.getElementById('email').value.trim(),
+            password: pwd,
+            role:     'admin'
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        
+        msg.style.color = '#10b981';
+        msg.textContent = 'Admin account created! Redirecting to login...';
+        setTimeout(() => location.href = '/admin-login.html', 1500);
+      } catch(err) {
+        msg.style.color = '#ef4444';
+        msg.textContent = err.message;
+        btn.disabled = false; btn.textContent = '+ Register Admin';
+      }
+    }
+  </script>
+<script src="/js/visual-engine.js"></script>
+</body>
+</html>

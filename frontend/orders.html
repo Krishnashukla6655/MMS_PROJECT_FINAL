@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders — MMS Industries</title>
+  <meta name="description" content="View your order history and confirmations."/>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .cancel-btn {
+      background: rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3);
+      color:#ef4444; font-size:.78rem; padding:.35rem .75rem; border-radius:6px;
+      cursor:pointer; transition:all .2s; font-weight:600;
+    }
+    .cancel-btn:hover { background:rgba(239,68,68,.25); border-color:#ef4444; }
+    .cancel-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .status-cancelled { background:rgba(239,68,68,.12); color:#ef4444; border:1px solid rgba(239,68,68,.25); border-radius:99px; padding:.2rem .7rem; font-size:.75rem; font-weight:600; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/index.html" class="nav-brand">⚙️ MMS<span>Industries</span></a>
+  <div class="nav-links">
+    <a href="/index.html">Products</a>
+    <a href="/orders.html" class="active" id="nav-orders" style="display:none">My Orders</a>
+    <a href="/profile.html" id="nav-profile" style="display:none">My Profile</a>
+    <a href="/admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    <a href="#" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+    <div id="userNotifBell" class="notif-item" onclick="toggleUserNotifPanel()" style="display:none;cursor:pointer;align-items:center;justify-content:center;gap:.5rem;background:rgba(139,92,246,.12);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(139,92,246,.4);border-radius:10px;padding:.4rem .8rem;font-size:.9rem;font-weight:700;color:#eaddff;-webkit-text-fill-color:initial;transition:all .3s;position:relative;text-align:center;overflow:hidden;box-shadow:inset 1px 0 0 rgba(255,255,255,0.1), 0 4px 15px rgba(0,0,0,0.2);margin-left:.5rem;">
+      <span style="z-index: 2; position: relative; -webkit-text-fill-color:#eaddff;">🔔 Alerts</span>
+      <span id="userNotifBadge" style="display:none;background:#ef4444;color:#fff;-webkit-text-fill-color:#fff;border-radius:99px;font-size:.7rem;font-weight:700;padding:.1rem .4rem;min-width:18px;text-align:center;z-index: 2;position: relative;">0</span>
+    </div>
+    <span id="nav-user" style="color:var(--muted2);font-size:.85rem;display:none;margin-left:.5rem;"></span>
+  </div>
+</nav>
+
+<div class="orders-page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <h1 style="font-size:1.6rem;font-weight:800">📋 My Orders</h1>
+    <a href="/index.html" class="btn btn-secondary btn-sm">+ Place New Order</a>
+  </div>
+
+  <div id="loadingSpinner" class="spinner"></div>
+  <div id="ordersList"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="icon">📦</div>
+    <h3>No orders yet</h3>
+    <p>Browse our catalog and place your first bulk order.</p>
+    <a href="/index.html" class="btn btn-primary" style="margin-top:1rem">Browse Products</a>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box" style="max-width:580px;text-align:left">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem">
+      <h2 style="font-size:1.2rem">Order Details</h2>
+      <button class="btn btn-secondary btn-sm" onclick="closeDetail()">✕ Close</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal-box" style="max-width:420px;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+    <h2 style="font-size:1.2rem;margin-bottom:.6rem">Cancel this Order?</h2>
+    <p style="color:var(--muted2);font-size:.88rem;margin-bottom:1.5rem">
+      This will cancel your order and restore stock. This action cannot be undone.
+    </p>
+    <div style="display:flex;gap:.75rem;justify-content:center">
+      <button class="btn btn-secondary" onclick="closeCancelModal()">Keep Order</button>
+      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancel()">Yes, Cancel It</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<script src="/js/auth.js"></script>
+<script>
+  requireAuth();
+
+  let cancelTargetId   = null;
+  let cancelTargetCard = null;
+
+  async function init() {
+    updateNav();
+    try {
+      const res    = await fetch('/api/orders/my', { headers: authHeaders() });
+      const orders = await res.json();
+      document.getElementById('loadingSpinner').style.display = 'none';
+
+      if (!orders.length) { document.getElementById('emptyState').style.display = 'block'; return; }
+
+      const list = document.getElementById('ordersList');
+      orders.forEach(o => {
+        const d    = new Date(o.created_at);
+        const date = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        const time = d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+        const canCancel = !['cancelled','delivered'].includes(o.status);
+
+        const card = document.createElement('div');
+        card.className = 'order-card';
+        card.id = `order-card-${o.id}`;
+        card.innerHTML = `
+          <div class="order-header">
+            <div>
+              <div style="font-weight:700;margin-bottom:.2rem">${o.product_names || 'Multiple Products'}</div>
+              <div class="order-conf">${o.confirmation_number} &nbsp;·&nbsp; ${date} ${time}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+              <span class="status-badge status-${o.status}" id="status-badge-${o.id}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+              <span class="order-amount">₹${parseFloat(o.total_amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</span>
+              <button class="btn btn-secondary btn-sm" onclick="viewDetail(${o.id})">View Details</button>
+              ${canCancel ? `<button class="cancel-btn" id="cancel-btn-${o.id}" onclick="openCancelModal(${o.id}, this)">✕ Cancel</button>` : ''}
+            </div>
+          </div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:.6rem">
+            ${o.item_count} product type${o.item_count>1?'s':''}
+          </div>`;
+        list.appendChild(card);
+      });
+    } catch(e) {
+      document.getElementById('loadingSpinner').style.display = 'none';
+      showToast('Failed to load orders', 'error');
+    }
+  }
+
+  function openCancelModal(orderId, btnEl) {
+    cancelTargetId   = orderId;
+    cancelTargetCard = btnEl;
+    document.getElementById('cancelModal').classList.add('show');
+  }
+
+  function closeCancelModal() {
+    cancelTargetId   = null;
+    cancelTargetCard = null;
+    document.getElementById('cancelModal').classList.remove('show');
+  }
+
+  async function confirmCancel() {
+    if (!cancelTargetId) return;
+    const confirmBtn = document.getElementById('confirmCancelBtn');
+    confirmBtn.disabled = true; confirmBtn.textContent = 'Cancelling…';
+    try {
+      const res  = await fetch(`/api/orders/my/${cancelTargetId}/cancel`, {
+        method: 'PATCH', headers: authHeaders()
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      showToast('Order cancelled. Stock restored ✅', 'success');
+
+      // Update badge inline without page reload
+      const badge = document.getElementById(`status-badge-${cancelTargetId}`);
+      if (badge) { badge.className = 'status-cancelled'; badge.textContent = 'Cancelled'; }
+      if (cancelTargetCard) cancelTargetCard.remove();
+
+      closeCancelModal();
+    } catch(err) {
+      showToast(err.message, 'error');
+    } finally {
+      confirmBtn.disabled = false; confirmBtn.textContent = 'Yes, Cancel It';
+    }
+  }
+
+  async function viewDetail(id) {
+    try {
+      const res  = await fetch(`/api/orders/my/${id}`, { headers: authHeaders() });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      const d    = new Date(data.created_at);
+      const date = d.toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+
+      let itemsHtml = '';
+      (data.items||[]).forEach(item => {
+        itemsHtml += `
+          <tr>
+            <td style="padding:.6rem .5rem">${item.name}</td>
+            <td style="padding:.6rem .5rem;text-align:center">${item.quantity} ${item.unit}</td>
+            <td style="padding:.6rem .5rem;text-align:right">₹${parseFloat(item.unit_price).toLocaleString('en-IN')}</td>
+            <td style="padding:.6rem .5rem;text-align:right;color:var(--secondary);font-weight:600">
+              ₹${(item.quantity*item.unit_price).toLocaleString('en-IN',{minimumFractionDigits:2})}
+            </td>
+          </tr>`;
+      });
+
+      document.getElementById('detailContent').innerHTML = `
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:1rem;margin-bottom:1rem">
+          <div style="font-size:.78rem;color:var(--muted2);margin-bottom:.2rem">Confirmation Number</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--success)">${data.confirmation_number}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted2);margin-bottom:1rem">
+          <span>Order Date: <strong style="color:var(--text)">${date}</strong></span>
+          <span class="status-badge status-${data.status}">${data.status}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border)">
+              <th style="text-align:left;padding:.5rem;color:var(--muted);font-size:.75rem">PRODUCT</th>
+              <th style="text-align:center;padding:.5rem;color:var(--muted);font-size:.75rem">QTY</th>
+              <th style="text-align:right;padding:.5rem;color:var(--muted);font-size:.75rem">UNIT PRICE</th>
+              <th style="text-align:right;padding:.5rem;color:var(--muted);font-size:.75rem">SUBTOTAL</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+        <hr class="divider"/>
+        <div style="text-align:right;font-size:1.1rem;font-weight:700;color:var(--secondary)">
+          Total: ₹${parseFloat(data.total_amount).toLocaleString('en-IN',{minimumFractionDigits:2})}
+        </div>`;
+
+      document.getElementById('detailModal').classList.add('show');
+    } catch(e) {
+      showToast(e.message || 'Failed to load order details', 'error');
+    }
+  }
+
+  function closeDetail() {
+    document.getElementById('detailModal').classList.remove('show');
+  }
+
+  init();
+</script>
+<script src="/js/visual-engine.js"></script>
+<script src="/js/chatbot.js"></script>
+<script src="/js/user-notifications.js"></script>
+<script src="/js/voice-mode.js"></script>
+</body>
+</html>
